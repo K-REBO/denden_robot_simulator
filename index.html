@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Denden Robot Simulator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Denden Robot Simulator</h1>
+        
+        <div class="main-layout">
+            <div class="left-panel">
+        
+        <div class="control-panel">
+            <div class="controls">
+                <button id="startBtn" class="start-btn">▶ Start</button>
+                <button id="stopBtn" class="stop-btn" disabled>⏹ Stop</button>
+                <button id="resetBtn" class="reset-btn">🔄 Reset</button>
+                <span id="simulationStatus" class="simulation-status status-stopped">⏹ Stopped</span>
+                
+                <div class="speed-control">
+                    <label for="speedSlider">Speed:</label>
+                    <input type="range" id="speedSlider" min="1" max="10" value="5">
+                    <span id="speedValue">5x</span>
+                </div>
+                
+                <div class="program-control">
+                    <label for="programSelect">Program:</label>
+                    <select id="programSelect">
+                        <option value="wall_following">壁沿い探索</option>
+                        <option value="spiral_search">スパイラル探索</option>
+                        <option value="random_walk">ランダム探索</option>
+                        <option value="systematic_grid">格子探索</option>
+                        <option value="target_seeking">ターゲット追跡</option>
+                        <option value="manual_control">手動操作</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <div class="info-panel">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span>Score:</span>
+                    <span id="score">0</span>
+                </div>
+                <div class="info-item">
+                    <span>Targets Found:</span>
+                    <span id="targetsFound">0/12</span>
+                </div>
+                <div class="info-item">
+                    <span>Time:</span>
+                    <span id="time">00:00</span>
+                </div>
+                <div class="info-item">
+                    <span>Robot Position:</span>
+                    <span id="robotPos">800, 400</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="simulation-area">
+            <canvas id="canvas" width="1700" height="900"></canvas>
+            
+            <div class="sensor-info">
+                <h3>Sensor Data</h3>
+                <div class="sensor-grid">
+                    <div class="sensor-item">
+                        <div>Distance Sensor</div>
+                        <div class="sensor-value" id="distanceValue">400cm</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div>Left Photo Sensor</div>
+                        <div class="sensor-value" id="leftPhotoValue">OFF</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div>Right Photo Sensor</div>
+                        <div class="sensor-value" id="rightPhotoValue">OFF</div>
+                    </div>
+                    <div class="sensor-item">
+                        <div>Servo Angle</div>
+                        <div class="sensor-value" id="servoAngleValue">0°</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="console" id="console">
+                <div>Denden Robot Simulator Console</div>
+                <div>Ready to start simulation...</div>
+            </div>
+        </div>
+        </div>
+        
+        <div class="right-panel">
+            <div class="remote-control" id="remoteControl" style="display: none;">
+                <h3>手動操作リモコン</h3>
+                
+                <div class="motor-control">
+                    <h4>モーター制御</h4>
+                    <div class="motor-sliders">
+                        <div class="motor-item">
+                            <label>左モーター: <span id="leftMotorValue">0</span></label>
+                            <input type="range" id="leftMotorSlider" min="-200" max="200" value="0">
+                        </div>
+                        <div class="motor-item">
+                            <label>右モーター: <span id="rightMotorValue">0</span></label>
+                            <input type="range" id="rightMotorSlider" min="-200" max="200" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="direction-buttons">
+                        <button id="forwardBtn" class="direction-btn">前進</button>
+                        <div class="turn-buttons">
+                            <button id="leftBtn" class="direction-btn">左回転</button>
+                            <button id="remoteStopBtn" class="direction-btn stop">停止</button>
+                            <button id="rightBtn" class="direction-btn">右回転</button>
+                        </div>
+                        <button id="backwardBtn" class="direction-btn">後退</button>
+                    </div>
+                </div>
+                
+                <div class="servo-control">
+                    <h4>距離センサー角度</h4>
+                    <div class="servo-item">
+                        <label>角度: <span id="servoAngleValue">0</span>°</label>
+                        <input type="range" id="servoSlider" min="-90" max="90" value="0">
+                    </div>
+                    <div class="servo-buttons">
+                        <button id="servoLeftBtn" class="servo-btn">左(-90°)</button>
+                        <button id="servoCenterBtn" class="servo-btn">中央(0°)</button>
+                        <button id="servoRightBtn" class="servo-btn">右(90°)</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        </div>
+    </div>
+    
+    <!-- 依存関係順にスクリプトを読み込み -->
+    <!-- 1. 基盤：定数と設定管理 -->
+    <script src="js/constants.js"></script>
+    <script src="js/config_loader.js"></script>
+    <script src="js/config_manager.js"></script>
+    
+    <!-- 2. コアモジュール：センサー、フィールド、ロボット -->
+    <script src="js/sensors.js"></script>
+    <script src="js/field.js"></script>
+    <script src="js/robot.js"></script>
+    
+    <!-- 3. 探索アルゴリズム -->
+    <script src="js/exploration_programs.js"></script>
+    
+    <!-- 4. UIとシミュレーション制御 -->
+    <script src="js/simulator.js"></script>
+    
+    <!-- 5. アプリケーション初期化（最後） -->
+    <script src="js/main.js"></script>
+</body>
+</html>

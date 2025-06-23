@@ -1,0 +1,309 @@
+/* Denden Robot Simulator - Main Styles */
+
+body {
+    margin: 0;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.container {
+    max-width: 1500px;
+    margin: 0 auto;
+}
+
+.main-layout {
+    display: flex;
+    gap: 20px;
+}
+
+.left-panel {
+    flex: 1;
+}
+
+.right-panel {
+    width: 350px;
+    flex-shrink: 0;
+}
+
+h1 {
+    text-align: center;
+    color: #333;
+}
+
+.control-panel {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+button {
+    padding: 10px 20px;
+    font-size: 16px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.start-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.start-btn:hover {
+    background-color: #45a049;
+}
+
+.start-btn:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.stop-btn {
+    background-color: #f44336;
+    color: white;
+}
+
+.stop-btn:hover {
+    background-color: #da190b;
+}
+
+.stop-btn:disabled {
+    background-color: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+}
+
+.reset-btn {
+    background-color: #008CBA;
+    color: white;
+}
+
+.reset-btn:hover {
+    background-color: #007B9A;
+}
+
+.btn-active {
+    box-shadow: 0 0 10px rgba(33, 150, 243, 0.6);
+    border: 2px solid #2196F3;
+}
+
+.simulation-status {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 14px;
+    font-weight: bold;
+    margin-left: 15px;
+}
+
+.status-stopped {
+    background-color: #ffebee;
+    color: #c62828;
+    border: 1px solid #ef5350;
+}
+
+.status-running {
+    background-color: #e8f5e8;
+    color: #2e7d32;
+    border: 1px solid #4caf50;
+}
+
+.status-paused {
+    background-color: #fff3e0;
+    color: #f57c00;
+    border: 1px solid #ff9800;
+}
+
+.speed-control, .program-control {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+select {
+    padding: 8px 12px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    cursor: pointer;
+    transition: border-color 0.3s;
+}
+
+select:hover {
+    border-color: #2196F3;
+}
+
+select:focus {
+    outline: none;
+    border-color: #2196F3;
+}
+
+.info-panel {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.simulation-area {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+#canvas {
+    border: 2px solid #333;
+    background-color: #ffffff;
+}
+
+.sensor-info {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.sensor-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.sensor-item {
+    text-align: center;
+    padding: 10px;
+    background-color: white;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.sensor-value {
+    font-weight: bold;
+    font-size: 18px;
+    color: #2196F3;
+}
+
+.console {
+    margin-top: 20px;
+    padding: 15px;
+    background-color: #1e1e1e;
+    color: #00ff00;
+    border-radius: 5px;
+    font-family: 'Courier New', monospace;
+    height: 150px;
+    overflow-y: auto;
+}
+
+.remote-control {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.motor-control, .servo-control {
+    margin-bottom: 25px;
+}
+
+.motor-control h4, .servo-control h4 {
+    margin: 0 0 15px 0;
+    color: #333;
+    border-bottom: 2px solid #2196F3;
+    padding-bottom: 5px;
+}
+
+.motor-item, .servo-item {
+    margin-bottom: 15px;
+}
+
+.motor-item label, .servo-item label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.motor-item input, .servo-item input {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+.direction-buttons {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    text-align: center;
+    margin-top: 15px;
+}
+
+.turn-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.direction-btn, .servo-btn {
+    padding: 12px 16px;
+    font-size: 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    background-color: #2196F3;
+    color: white;
+    transition: background-color 0.3s;
+}
+
+.direction-btn:hover, .servo-btn:hover {
+    background-color: #1976D2;
+}
+
+.direction-btn:active, .servo-btn:active {
+    background-color: #0D47A1;
+}
+
+.direction-btn.stop {
+    background-color: #f44336;
+}
+
+.direction-btn.stop:hover {
+    background-color: #d32f2f;
+}
+
+.servo-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    margin-top: 10px;
+}

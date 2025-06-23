@@ -1,0 +1,101 @@
+# Denden Robot Configuration File
+# ロボットのハードウェア仕様、センサー設定、動作パラメータを定義
+
+# 基本情報
+name: "Denden Robot"
+version: "1.0"
+description: "差動駆動式探索ロボット"
+
+# 物理的寸法 (単位: mm)
+dimensions:
+  width: 300          # ロボットの幅（表示用）
+  height: 200         # ロボットの奥行き（表示用）
+  length: 300         # ロボットの高さ（表示用）
+  wheelbase: 200      # 左右車輪間の距離
+  
+  # 車輪位置による落下判定（ロボット中心からの車輪位置）
+  wheel_track:
+    width: 200        # 左右車輪間の距離（トレッド幅） (mm)
+    length: 150       # 前後車輪間の距離（ホイールベース相当） (mm)
+
+# 初期位置と姿勢
+initial_position:
+  x: 850              # フィールド中央のX座標 (px) - ボーダー込み座標
+  y: 450              # フィールド中央のY座標 (px) - ボーダー込み座標
+  angle: -90            # 初期角度 (degrees) 0=北向き
+
+# 動作性能パラメータ
+performance:
+  max_speed: 200           # 最大直進速度 (mm/s) = 20cm/s
+  max_rotation_speed: 90   # 最大回転速度 (degrees/s)
+  acceleration: 100        # 加速度 (mm/s²)
+  deceleration: 150        # 減速度 (mm/s²)
+
+# センサー設定
+sensors:
+  # 距離センサー（超音波/レーザー）
+  distance_sensor:
+    min_range: 20           # 最小測定距離 (mm)
+    max_range: 4000         # 最大測定距離 (mm) = 4m
+    position:
+      x: 150                # ロボット中心からの前方距離 (mm)
+      y: 0                  # 左右オフセット (mm)
+      z: 0                  # 高さオフセット (mm)
+    servo_range:
+      min: -90              # サーボ最小角度 (degrees)
+      max: 90               # サーボ最大角度 (degrees)
+    accuracy: 5             # 測定精度・誤差範囲 (±mm)
+    scan_speed: 180         # サーボ回転速度 (degrees/s)
+    
+  # フォトセンサー（反射式・下向き）
+  photo_sensors:
+    count: 2                # センサー個数
+    position:
+      base_x: 200           # ロボット中心から前方への距離 (mm)
+      base_y: 0             # 基準位置の左右オフセット (mm)
+      spacing: 150          # 左右センサー間の距離 (mm)
+    detection_range: 10     # 検知範囲 (mm)
+    response_time: 10       # 応答時間 (ms)
+    threshold: 0.5          # 白黒判定閾値 (0-1, 0.5=中間)
+
+# 制御システム設定
+control:
+  response_time: 50         # コマンド応答遅延 (ms)
+  command_buffer: 10        # コマンドキューサイズ（個）
+  emergency_stop: true      # 緊急停止機能有効
+  safety_margin: 50         # 安全距離マージン (mm)
+  update_frequency: 60      # 制御ループ周波数 (Hz)
+
+# 誤差・ノイズ設定（リアルなシミュレーション用）
+errors:
+  motor_speed_variance: 0.05    # モーター速度個体差 (±5%)
+  distance_sensor_error: 5      # 距離センサー誤差 (±mm)
+  angle_error: 2                # 角度測定誤差 (±degrees)
+  position_drift: 1             # 位置ドリフト (mm/s)
+  sensor_noise: 0.02            # センサーノイズレベル (0-1)
+
+# 外観・表示設定
+appearance:
+  body_color: "#2196F3"         # ロボット本体色
+  sensor_color: "#FF5722"       # センサー表示色
+  trail_color: "rgba(0, 100, 255, 0.3)"  # 軌跡線の色
+  show_trail: true              # 移動軌跡表示
+  show_sensor_beam: true        # 距離センサービーム表示
+  show_sensor_positions: true   # センサー位置表示
+  show_debug_info: true        # デバッグ情報表示
+
+# シミュレーション設定
+simulation:
+  time_step: 16                 # シミュレーション時間刻み (ms) = 60FPS
+  trail_length: 1000            # 軌跡保持ポイント数
+  default_speed_multiplier: 1  # デフォルト速度倍率
+  physics_enabled: true         # 物理演算有効
+  collision_detection: true     # 衝突検知有効
+  
+# デバッグ・ログ設定
+debug:
+  log_level: "INFO"             # ログレベル: DEBUG, INFO, WARN, ERROR
+  log_sensors: false            # センサー値ログ出力
+  log_movement: false           # 移動コマンドログ出力
+  log_collisions: true          # 衝突イベントログ出力
+  performance_monitor: false    # パフォーマンス監視
