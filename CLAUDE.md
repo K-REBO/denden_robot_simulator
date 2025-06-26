@@ -39,13 +39,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `setMotorSpeeds(leftSpeed, rightSpeed)`:差動駆動制御
 - `delay(time_ms)`: 一時停止する時間 (unsigned long)。単位はミリ秒 
 - `milis()`-> unsigned long int: 実行中のプログラムがスタートしてからの時間 (unsigned long) 
+- `found()` -> bool: ターゲットを発見したかどうかを返す
 
 ### スコアリングシステム
 - 未発見ターゲット到達で10点
 - 発見済みターゲット再訪で2点
 - 連続で同一のターゲットを訪問した場合の加算はない。
 - ターゲット到達時にコンソール・GUIに表示
-- ターゲット発見条件：フォトセンサのどちらか黒検知 AND 距離センサ ≤ 13cm
+- ターゲット発見条件：フォトセンサのどちらか黒検知 AND 距離センサ ≤ 3cm（パラメータ調整済み）
 
 
 ## シミュレーション環境

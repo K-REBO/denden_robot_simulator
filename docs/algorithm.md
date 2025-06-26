@@ -34,6 +34,7 @@
 - `getDistance()`: 距離センサ値（cm）
 - `getL_Photo()` / `getR_Photo()`: フォトセンサ白黒判定（bool）
 - `delay(ms)`, `millis()`: タイマ制御用
+- `found()` -> bool: ターゲットを発見したかどうかを返す
 
 ---
 

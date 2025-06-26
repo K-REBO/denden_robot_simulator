@@ -8,21 +8,21 @@ description: "差動駆動式探索ロボット"
 
 # 物理的寸法 (単位: mm)
 dimensions:
-  width: 300          # ロボットの幅（表示用）
-  height: 200         # ロボットの奥行き（表示用）
-  length: 300         # ロボットの高さ（表示用）
+  width: 160          # ロボットの幅（表示用）
+  height: 160         # ロボットの奥行き（表示用）
+  length: 160         # ロボットの高さ（表示用）
   wheelbase: 200      # 左右車輪間の距離
   
   # 車輪位置による落下判定（ロボット中心からの車輪位置）
   wheel_track:
-    width: 200        # 左右車輪間の距離（トレッド幅） (mm)
-    length: 150       # 前後車輪間の距離（ホイールベース相当） (mm)
+    width: 150         # 左右車輪間の距離（トレッド幅） (mm)
+    length: 90       # 前後車輪間の距離（ホイールベース相当） (mm)
 
 # 初期位置と姿勢
 initial_position:
   x: 850              # フィールド中央のX座標 (px) - ボーダー込み座標
   y: 450              # フィールド中央のY座標 (px) - ボーダー込み座標
-  angle: -90            # 初期角度 (degrees) 0=北向き
+  angle: 0            # 初期角度 (degrees) 0=北向き
 
 # 動作性能パラメータ
 performance:
@@ -51,9 +51,9 @@ sensors:
   photo_sensors:
     count: 2                # センサー個数
     position:
-      base_x: 200           # ロボット中心から前方への距離 (mm)
+      base_x: 100           # ロボット中心から前方への距離 (mm)
       base_y: 0             # 基準位置の左右オフセット (mm)
-      spacing: 150          # 左右センサー間の距離 (mm)
+      spacing: 100          # 左右センサー間の距離 (mm)
     detection_range: 10     # 検知範囲 (mm)
     response_time: 10       # 応答時間 (ms)
     threshold: 0.5          # 白黒判定閾値 (0-1, 0.5=中間)
@@ -68,11 +68,11 @@ control:
 
 # 誤差・ノイズ設定（リアルなシミュレーション用）
 errors:
-  motor_speed_variance: 0.05    # モーター速度個体差 (±5%)
-  distance_sensor_error: 5      # 距離センサー誤差 (±mm)
-  angle_error: 2                # 角度測定誤差 (±degrees)
-  position_drift: 1             # 位置ドリフト (mm/s)
-  sensor_noise: 0.02            # センサーノイズレベル (0-1)
+  motor_speed_variance: 0    # モーター速度個体差 (±5%)
+  distance_sensor_error: 0      # 距離センサー誤差 (±mm)
+  angle_error: 0                # 角度測定誤差 (±degrees)
+  position_drift: 0             # 位置ドリフト (mm/s)
+  sensor_noise: 0            # センサーノイズレベル (0-1)
 
 # 外観・表示設定
 appearance:

@@ -22,19 +22,14 @@
                 
                 <div class="speed-control">
                     <label for="speedSlider">Speed:</label>
-                    <input type="range" id="speedSlider" min="1" max="10" value="5">
-                    <span id="speedValue">5x</span>
+                    <input type="range" id="speedSlider" min="1" max="20" step="1" value="1">
+                    <span id="speedValue">1x</span>
                 </div>
                 
                 <div class="program-control">
                     <label for="programSelect">Program:</label>
                     <select id="programSelect">
-                        <option value="wall_following">壁沿い探索</option>
-                        <option value="spiral_search">スパイラル探索</option>
-                        <option value="random_walk">ランダム探索</option>
-                        <option value="systematic_grid">格子探索</option>
-                        <option value="target_seeking">ターゲット追跡</option>
-                        <option value="manual_control">手動操作</option>
+                        <!-- オプションは動的に生成されます -->
                     </select>
                 </div>
             </div>

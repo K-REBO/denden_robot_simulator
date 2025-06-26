@@ -81,21 +81,13 @@ const EXPLORATION = {
     SCAN_DELAY: 25                     // スキャン待機時間 (ms)
 };
 
-// === センサー関連 ===
-const SENSORS = {
-    DISTANCE_MIN_RANGE: 20,            // 距離センサー最小範囲 (mm)
-    DISTANCE_MAX_RANGE: 4000,          // 距離センサー最大範囲 (mm)
-    PHOTO_SENSOR_SPACING: 200,         // フォトセンサー間隔 (mm)
-    PHOTO_SENSOR_FORWARD_OFFSET: 250   // フォトセンサー前方オフセット (mm)
-};
-
 // === フィールド関連 ===
 const FIELD = {
     WIDTH: 1600,                       // フィールド幅 (mm)
     HEIGHT: 800,                       // フィールド高さ (mm)
     BORDER_WIDTH: 50,                  // 境界線幅 (mm)
-    TARGET_RADIUS: 30,                 // ターゲット半径 (mm)
-    TARGET_BLACK_RING_WIDTH: 50,       // ターゲット黒リング幅 (mm)
+    TARGET_RADIUS: 66,                 // ターゲット半径 (mm)
+    TARGET_BLACK_RING_WIDTH: 74,       // ターゲット黒リング幅 (mm)
     TARGET_SPACING: 400                // ターゲット間隔 (mm)
 };
 
@@ -129,7 +121,6 @@ if (typeof window !== 'undefined') {
         SCORING,
         ROBOT_CONTROL,
         EXPLORATION,
-        SENSORS,
         FIELD,
         UI,
         TIMING
@@ -142,7 +133,6 @@ if (typeof module !== 'undefined' && module.exports) {
         SCORING,
         ROBOT_CONTROL,
         EXPLORATION,
-        SENSORS,
         FIELD,
         UI,
         TIMING

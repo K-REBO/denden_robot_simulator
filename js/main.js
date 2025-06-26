@@ -76,7 +76,7 @@ class Application {
             throw new Error('定数オブジェクト(CONST)が初期化されていません');
         }
         
-        const requiredConstGroups = ['SCORING', 'ROBOT_CONTROL', 'EXPLORATION', 'SENSORS', 'FIELD', 'UI', 'TIMING'];
+        const requiredConstGroups = ['SCORING', 'ROBOT_CONTROL', 'EXPLORATION', 'FIELD', 'UI', 'TIMING'];
         const missingGroups = [];
         
         for (const group of requiredConstGroups) {

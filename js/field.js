@@ -144,6 +144,30 @@ class Field {
         return this.visitedTargets.size === this.targets.length;
     }
     
+    // ロボット表示用四角形の4角を計算するヘルパーメソッド
+    getRobotDisplayCorners(robot, width, height) {
+        const halfWidth = width / 2;
+        const halfHeight = height / 2;
+        
+        // 基本四角形の4角（ロボット中心基準）
+        const corners = [
+            { x: -halfWidth, y: -halfHeight },  // 左上
+            { x: halfWidth, y: -halfHeight },   // 右上
+            { x: halfWidth, y: halfHeight },    // 右下
+            { x: -halfWidth, y: halfHeight }    // 左下
+        ];
+        
+        // 回転と移動変換を適用
+        const angleRad = robot.angle * Math.PI / 180;
+        const cos = Math.cos(angleRad);
+        const sin = Math.sin(angleRad);
+        
+        return corners.map(corner => ({
+            x: robot.x + corner.x * cos - corner.y * sin,
+            y: robot.y + corner.x * sin + corner.y * cos
+        }));
+    }
+    
     checkCollision(robot) {
         if (this.gameOver) return null;
         
@@ -161,6 +185,36 @@ class Field {
                 this.gameOver = true;
                 this.gameOverReason = 'collision';
                 return { type: 'collision', x: corner.x, y: corner.y, cornerIndex: i };
+            }
+        }
+        
+        // ロボット外側とターゲットの衝突チェック（robot.yamlの表示用サイズを使用）
+        // ロボット表示用四角形の4角を計算
+        const displayCorners = this.getRobotDisplayCorners(robot, robot.width, robot.height);
+        
+        for (let i = 0; i < displayCorners.length; i++) {
+            const corner = displayCorners[i];
+            
+            // 各ターゲットとの衝突チェック
+            for (const target of this.targets) {
+                const distance = Math.sqrt(
+                    Math.pow(corner.x - target.x, 2) + 
+                    Math.pow(corner.y - target.y, 2)
+                );
+                
+                if (distance <= target.radius) {
+                    // デバッグ用: ターゲット衝突によるゲームオーバーを無効化
+                    console.log(`ターゲット${target.id}に衝突検知（デバッグモード: ゲームオーバーなし）`);
+                    // this.gameOver = true;
+                    // this.gameOverReason = 'target_collision';
+                    // return { 
+                    //     type: 'target_collision', 
+                    //     x: corner.x, 
+                    //     y: corner.y, 
+                    //     cornerIndex: i,
+                    //     targetId: target.id 
+                    // };
+                }
             }
         }
         

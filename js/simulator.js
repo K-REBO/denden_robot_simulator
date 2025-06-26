@@ -51,6 +51,9 @@ class Simulator {
         // DOM要素を一度だけ取得して保存
         this.cacheUIElements();
         
+        // プログラム選択肢を動的に生成
+        this.populateprogramSelect();
+        
         const { startBtn, stopBtn, resetBtn, speedSlider, speedValue, programSelect } = this.domElements;
         
         startBtn.addEventListener('click', () => this.start());
@@ -58,11 +61,12 @@ class Simulator {
         resetBtn.addEventListener('click', () => this.reset());
         
         // 速度スライダーの初期値を設定ファイルから設定
-        speedSlider.value = this.speed;
+        const initialSliderValue = this.speedToSliderValue(this.speed);
+        speedSlider.value = initialSliderValue;
         speedValue.textContent = `${this.speed}x`;
         
         speedSlider.addEventListener('input', (e) => {
-            this.speed = parseInt(e.target.value);
+            this.speed = this.sliderValueToSpeed(parseInt(e.target.value));
             speedValue.textContent = `${this.speed}x`;
         });
         
@@ -210,6 +214,17 @@ class Simulator {
         });
     }
     
+    // スライダー値（1-20）を速度倍率に変換
+    sliderValueToSpeed(sliderValue) {
+        // 1-20: 1x - 20x (1刻み)
+        return sliderValue;
+    }
+    
+    // 速度倍率をスライダー値（1-20）に変換
+    speedToSliderValue(speed) {
+        return Math.max(1, Math.min(20, Math.round(speed)));
+    }
+    
     setServoValue(angle) {
         const { servoSlider, servoAngleValue } = this.domElements;
         
@@ -264,6 +279,7 @@ class Simulator {
         this.stop();
         this.field.reset();
         this.robot.reset();
+        this.accumulatedTime = 0; // 累積時間もリセット
         this.setExplorationProgram();
         this.updateUI();
         this.render();
@@ -274,18 +290,34 @@ class Simulator {
     animate(currentTime = 0) {
         if (!this.isRunning) return;
         
-        const deltaTime = (currentTime - this.lastTime) * this.speed;
+        const realDeltaTime = currentTime - this.lastTime;
         this.lastTime = currentTime;
         
-        const safetyResult = this.robot.update(deltaTime);
+        // 物理計算は固定タイムステップで実行（速度倍率の影響を受けない）
+        const physicsTimeStep = this.config.simulation?.time_step || 16; // 16ms = 60FPS
         
-        if (safetyResult) {
-            this.handleGameOver(safetyResult);
-            return;
-        }
+        // 実際の経過時間に速度倍率を適用して累積
+        if (!this.accumulatedTime) this.accumulatedTime = 0;
+        this.accumulatedTime += realDeltaTime * this.speed;
         
-        if (!this.field.isGameOver()) {
-            this.robot.executeExploration();
+        let safetyResult = null;
+        
+        // 累積時間が1ステップ分に達したら物理計算を実行
+        while (this.accumulatedTime >= physicsTimeStep && !safetyResult && !this.field.isGameOver()) {
+            this.accumulatedTime -= physicsTimeStep;
+            
+            // ロボットの物理更新（常に固定の16msで計算）
+            safetyResult = this.robot.update(physicsTimeStep);
+            
+            if (safetyResult) {
+                this.handleGameOver(safetyResult);
+                return;
+            }
+            
+            // 探索アルゴリズムの実行
+            if (!this.field.isGameOver()) {
+                this.robot.executeExploration();
+            }
         }
         
         this.render();
@@ -578,6 +610,24 @@ class Simulator {
         const timestamp = new Date().toLocaleTimeString();
         console.innerHTML += `<div>[${timestamp}] ${message}</div>`;
         console.scrollTop = console.scrollHeight;
+    }
+    
+    // プログラム選択肢を動的に生成
+    populateprogramSelect() {
+        const programSelect = this.domElements.programSelect;
+        
+        // 既存のオプションをクリア
+        programSelect.innerHTML = '';
+        
+        // ExplorationPrograms.programsから動的に生成
+        for (const [key, displayName] of Object.entries(ExplorationPrograms.programs)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = displayName;
+            programSelect.appendChild(option);
+        }
+        
+        console.log('プログラム選択肢を動的に生成しました:', Object.keys(ExplorationPrograms.programs));
     }
 }
 
