@@ -376,6 +376,14 @@ class Simulator {
             }
         }
         
+        // DirectApproachProgramの場合、詳細デバッグレポートを出力
+        if (this.currentProgram === 'direct_approach' && this.robot.explorationProgram) {
+            if (typeof this.robot.explorationProgram.onGameOver === 'function') {
+                const gameOverReason = safetyResult.type === 'collision' ? 'collision' : 'fall_off';
+                this.robot.explorationProgram.onGameOver(this.robot, gameOverReason);
+            }
+        }
+        
         // ゲームオーバー表示
         this.ctx.fillStyle = 'rgba(255, 0, 0, 0.8)';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);

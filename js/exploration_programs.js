@@ -486,7 +486,7 @@ window.ManualControlProgram = ManualControlProgram;
 //     ManualControlProgram
 // };
 
-// 直接アプローチ戦略 - direct_aproach.mdの仕様に基づく実装
+
 class DirectApproachProgram extends BaseExplorationProgram {
     constructor() {
         super();
@@ -502,7 +502,7 @@ class DirectApproachProgram extends BaseExplorationProgram {
         this.params = {
             // 検索パラメータ
             search_angle_L: -90,
-            search_angle_R: 90,
+            search_angle_R: 10,
             search_angle_step: 4,
             search_timeout: 15000,
             target_selection_strategy: 'nearest', // 'leftmost' or 'rightmost' or "nearest" , or "center_closest"
@@ -518,17 +518,29 @@ class DirectApproachProgram extends BaseExplorationProgram {
             min_approach_speed: 80,                // 最小接近速度
             max_approach_speed: 200,               // 最大接近速度
             
-            // ステップ移動パラメータ
-            step_forward_distance: 10,
-            step_forward_angle: 90,
-            step_back_distance: 5,
-            
             // 落下回避パラメータ
             avoid_fall_back_distance: 15,
             
-            // 404状態パラメータ
-            recovery_forward_distance: 100,
-            recovery_rotation_angle: 60,
+            // 距離センサー範囲
+            max_distance_range: 4000,         // 距離センサー最大測定範囲 (mm)
+            min_distance_range: 20,           // 距離センサー最小測定範囲 (mm)
+            
+            // モーター速度設定
+            search_turn_speed: 30,            // search状態での回転速度
+            step_forward_speed: 50,           // step_forward状態での前進速度
+            step_backward_speed: -50,         // step_forward状態での後退速度
+            step_turn_left_speed: -80,        // step_forward状態での左回転速度
+            step_turn_right_speed: 80,        // step_forward状態での右回転速度
+            recovery_forward_speed: 50,       // 404状態での前進速度
+            recovery_turn_left_speed: -80,    // 404状態での左回転速度
+            recovery_turn_right_speed: 80,    // 404状態での右回転速度
+            avoid_fall_backward_speed: -50,   // avoid_fall状態での後退速度
+            
+            // タイミング設定
+            servo_stabilize_delay: 50,        // サーボ安定待機時間 (ms)
+            step_backward_time: 200,          // step_forward後退時間 (ms)
+            step_forward_time: 200,           // step_forward前進時間 (ms)
+            recovery_forward_time: 2000,      // 404状態前進時間 (ms)
             
             // 非同期処理パラメータ
             photo_sensor_frequency: 50,
@@ -537,7 +549,7 @@ class DirectApproachProgram extends BaseExplorationProgram {
             
             // 回転調整パラメータ（目視調整用）
             first_rotation_time: 1500,        // first状態での-90°回転時間 (ms) - 目視で調整
-            step_rotation_time: 1600,         // step_forward状態での回転時間 (ms) - 目視で調整
+            step_rotation_time: 1100,         // step_forward状態での回転時間 (ms) - 目視で調整
             recovery_rotation_time: 333,      // 404状態での30°回転時間 (ms) - 目視で調整
             
             // デバッグ用パラメータ
@@ -562,10 +574,31 @@ class DirectApproachProgram extends BaseExplorationProgram {
         this.lastFeedbackTime = 0;
         this.currentScanIndex = 0;
         this.feedbackDistances = []; // [left, center, right]の距離
+        
+        // デバッグ用：軌跡とステート履歴
+        this.trajectory = []; // 位置履歴
+        this.stateHistory = []; // ステート変遷履歴
+        this.gameStartTime = 0;
     }
     
     execute(robot) {
         const now = robot.millis();
+        
+        // ゲーム開始時間記録
+        if (this.gameStartTime === 0) {
+            this.gameStartTime = now;
+        }
+        
+        // 軌跡記録（1秒間隔）
+        if (this.trajectory.length === 0 || now - this.trajectory[this.trajectory.length - 1].timestamp >= 1000) {
+            this.trajectory.push({
+                timestamp: now,
+                x: robot.x || 0,
+                y: robot.y || 0,
+                angle: robot.angle || 0,
+                state: this.state
+            });
+        }
         
         // 非同期処理実行
         this.executeAsyncTasks(robot, now);
@@ -597,6 +630,16 @@ class DirectApproachProgram extends BaseExplorationProgram {
     }
     
     executeCurrentState(robot, now) {
+        // ステート変遷記録
+        const lastState = this.stateHistory.length > 0 ? this.stateHistory[this.stateHistory.length - 1].state : null;
+        if (lastState !== this.state) {
+            this.stateHistory.push({
+                timestamp: now,
+                state: this.state,
+                duration: lastState ? now - this.stateHistory[this.stateHistory.length - 1].timestamp : 0
+            });
+        }
+        
         // デバッグ: 現在の状態を表示
         console.log(`🔄 状態実行: ${this.state} (時刻: ${now}ms)`);
         
@@ -669,12 +712,12 @@ class DirectApproachProgram extends BaseExplorationProgram {
             console.log(`🎯 サーボスキャン: 角度=${this.currentServoAngle}°（範囲: ${this.params.search_angle_L}°〜${this.params.search_angle_R}°）`);
             
             robot.setServo(this.currentServoAngle);
-            robot.delay(50); // サーボ安定待機
+            robot.delay(this.params.servo_stabilize_delay); // サーボ安定待機
             
             const distance = robot.getDistance();
             console.log(`📏 距離測定: ${distance}mm`);
             
-            if (distance <= 4000 && distance >= 20) { // 有効範囲内
+            if (distance <= this.params.max_distance_range && distance >= this.params.min_distance_range) { // 有効範囲内
                 this.scanResults.push({
                     angle: this.currentServoAngle,
                     distance: distance
@@ -688,7 +731,7 @@ class DirectApproachProgram extends BaseExplorationProgram {
             console.log(`⬆️ 次のサーボ角度: ${this.currentServoAngle}°（ステップ: ${this.params.search_angle_step}°）`);
             
             // 車体回転（同時実行）
-            robot.setMotorSpeeds(-30, 30); // ゆっくり回転
+            robot.setMotorSpeeds(-this.params.search_turn_speed, this.params.search_turn_speed); // ゆっくり回転
             console.log(`🔄 車体回転中: 左モーター=-30, 右モーター=30`);
             
             return true;
@@ -817,15 +860,15 @@ class DirectApproachProgram extends BaseExplorationProgram {
         
         switch(this.stepForwardPhase) {
             case 0: // 後退フェーズ
-                robot.setMotorSpeeds(-50, -50);
-                if (elapsed >= 200) { // 5mm後退完了（概算）
+                robot.setMotorSpeeds(this.params.step_backward_speed, this.params.step_backward_speed);
+                if (elapsed >= this.params.step_backward_time) { // 後退完了
                     this.stepForwardPhase = 1;
                     this.stepForwardStartTime = now;
                 }
                 break;
                 
             case 1: // 回転フェーズ
-                robot.setMotorSpeeds(-80, 80);
+                robot.setMotorSpeeds(this.params.step_turn_left_speed, this.params.step_turn_right_speed);
                 if (elapsed >= this.params.step_rotation_time) {
                     this.stepForwardPhase = 2;
                     this.stepForwardStartTime = now;
@@ -833,8 +876,8 @@ class DirectApproachProgram extends BaseExplorationProgram {
                 break;
                 
             case 2: // 前進フェーズ
-                robot.setMotorSpeeds(50, 50);
-                if (elapsed >= 200) { // 10mm前進完了（概算）
+                robot.setMotorSpeeds(this.params.step_forward_speed, this.params.step_forward_speed);
+                if (elapsed >= this.params.step_forward_time) { // 前進完了
                     robot.setMotorSpeeds(0, 0);
                     // search状態に戻る
                     this.state = 'search';
@@ -853,13 +896,13 @@ class DirectApproachProgram extends BaseExplorationProgram {
                 // サーボ角度範囲内でスキャン
                 if (this.avoidFallServoAngle <= 90) {
                     robot.setServo(this.avoidFallServoAngle);
-                    robot.delay(50); // サーボ安定待機
+                    robot.delay(this.params.servo_stabilize_delay); // サーボ安定待機
                     
                     const distance = robot.getDistance();
                     console.log(`avoid_fall スキャン: 角度${this.avoidFallServoAngle}°, 距離${distance}mm`);
                     
                     // 有効範囲内で距離センサーが既定値以下の場合
-                    if (distance <= this.params.distance_threshold * 10 && distance >= 20) {
+                    if (distance <= this.params.distance_threshold * 10 && distance >= this.params.min_distance_range) {
                         this.avoidFallScanResults.push({
                             angle: this.avoidFallServoAngle,
                             distance: distance
@@ -890,7 +933,7 @@ class DirectApproachProgram extends BaseExplorationProgram {
                 }
                 
             case 1: // 後退フェーズ
-                robot.setMotorSpeeds(-50, -50);
+                robot.setMotorSpeeds(this.params.avoid_fall_backward_speed, this.params.avoid_fall_backward_speed);
                 
                 // 後退時間計算（avoid_fall_back_distanceに基づく）
                 const backTime = (this.params.avoid_fall_back_distance / 50) * 1000; // 概算
@@ -918,10 +961,10 @@ class DirectApproachProgram extends BaseExplorationProgram {
     execute404(robot, now) {
         const elapsed = now - this.stepForwardStartTime;
         
-        if (elapsed < 2000) { // 前進フェーズ（2秒で100mm前進）
-            robot.setMotorSpeeds(50, 50);
-        } else if (elapsed < 2000 + this.params.recovery_rotation_time) { // 回転フェーズ
-            robot.setMotorSpeeds(-80, 80);
+        if (elapsed < this.params.recovery_forward_time) { // 前進フェーズ
+            robot.setMotorSpeeds(this.params.recovery_forward_speed, this.params.recovery_forward_speed);
+        } else if (elapsed < this.params.recovery_forward_time + this.params.recovery_rotation_time) { // 回転フェーズ
+            robot.setMotorSpeeds(this.params.recovery_turn_left_speed, this.params.recovery_turn_right_speed);
         } else {
             // 動作完了、search状態に戻る
             robot.setMotorSpeeds(0, 0);
@@ -1001,6 +1044,79 @@ class DirectApproachProgram extends BaseExplorationProgram {
         this.isFirstInitialized = false;
         this.resetSearchState();
         this.stepForwardPhase = 0;
+        
+        // デバッグ用データリセット
+        this.trajectory = [];
+        this.stateHistory = [];
+        this.gameStartTime = 0;
+    }
+    
+    // GameOver時に呼び出されるメソッド
+    onGameOver(robot, reason) {
+        const now = robot.millis();
+        const totalTime = now - this.gameStartTime;
+        
+        console.log("\n" + "=".repeat(80));
+        console.log("🚨 GAME OVER - DirectApproachProgram Debug Report");
+        console.log("=".repeat(80));
+        
+        // 基本情報
+        console.log("📊 基本情報:");
+        console.log(`  ゲーム終了理由: ${reason}`);
+        console.log(`  総プレイ時間: ${totalTime}ms (${(totalTime/1000).toFixed(1)}秒)`);
+        console.log(`  最終位置: x=${robot.x?.toFixed(1) || 'N/A'}, y=${robot.y?.toFixed(1) || 'N/A'}`);
+        console.log(`  最終ステート: ${this.state}`);
+        console.log(`  発見ターゲット数: ${robot.score || 0}`);
+        
+        // ステート履歴
+        console.log("\n📈 ステート変遷履歴:");
+        this.stateHistory.forEach((entry, index) => {
+            const duration = index < this.stateHistory.length - 1 ? 
+                this.stateHistory[index + 1].timestamp - entry.timestamp : 
+                now - entry.timestamp;
+            console.log(`  ${index + 1}. ${entry.state} (${(duration/1000).toFixed(1)}s) - ${entry.timestamp}ms`);
+        });
+        
+        // ステート統計
+        console.log("\n📊 ステート時間統計:");
+        const stateStats = {};
+        this.stateHistory.forEach((entry, index) => {
+            const duration = index < this.stateHistory.length - 1 ? 
+                this.stateHistory[index + 1].timestamp - entry.timestamp : 
+                now - entry.timestamp;
+            stateStats[entry.state] = (stateStats[entry.state] || 0) + duration;
+        });
+        Object.entries(stateStats).forEach(([state, time]) => {
+            console.log(`  ${state}: ${(time/1000).toFixed(1)}s (${((time/totalTime)*100).toFixed(1)}%)`);
+        });
+        
+        // 軌跡情報
+        console.log("\n🗺️ 軌跡情報 (最初と最後の10ポイント):");
+        console.log("  最初の10ポイント:");
+        this.trajectory.slice(0, 10).forEach((point, index) => {
+            console.log(`    ${index + 1}. t=${point.timestamp}ms, x=${point.x?.toFixed(1)}, y=${point.y?.toFixed(1)}, angle=${point.angle?.toFixed(1)}°, state=${point.state}`);
+        });
+        
+        if (this.trajectory.length > 10) {
+            console.log("  最後の10ポイント:");
+            this.trajectory.slice(-10).forEach((point, index) => {
+                const actualIndex = this.trajectory.length - 10 + index + 1;
+                console.log(`    ${actualIndex}. t=${point.timestamp}ms, x=${point.x?.toFixed(1)}, y=${point.y?.toFixed(1)}, angle=${point.angle?.toFixed(1)}°, state=${point.state}`);
+            });
+        }
+        
+        // パラメータ情報
+        console.log("\n⚙️ 使用パラメータ:");
+        console.log("  主要パラメータ:");
+        console.log(`    search_angle_L: ${this.params.search_angle_L}°`);
+        console.log(`    search_angle_R: ${this.params.search_angle_R}°`);
+        console.log(`    search_timeout: ${this.params.search_timeout}ms`);
+        console.log(`    approach_speed: ${this.params.approach_speed}`);
+        console.log(`    distance_threshold: ${this.params.distance_threshold}cm`);
+        console.log(`    target_selection_strategy: ${this.params.target_selection_strategy}`);
+        
+        console.log("=".repeat(80));
+        console.log("Debug report end\n");
     }
 }
 
