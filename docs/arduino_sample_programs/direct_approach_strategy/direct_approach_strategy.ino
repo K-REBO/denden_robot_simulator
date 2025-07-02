@@ -38,8 +38,8 @@
 #define RECOVERY_ROTATION_TIME_MS 333
 
 // モーターキャリブレーション定数
-#define LEFT_MOTOR_COMPENSATION   1.0   // 左モーター補正係数（デフォルト1.0）
-#define RIGHT_MOTOR_COMPENSATION  1.1   // 右モーター補正係数（デフォルト1.0）
+#define LEFT_MOTOR_COMPENSATION   1.1   // 左モーター補正係数（デフォルト1.0）
+#define RIGHT_MOTOR_COMPENSATION  1.0   // 右モーター補正係数（デフォルト1.0）
 
 // 状態定義
 enum RobotState {

@@ -22,7 +22,7 @@
 #define MAX_APPROACH_SPEED    200
 
 // モーターキャリブレーション定数
-#define LEFT_MOTOR_COMPENSATION   1.0   // 左モーター補正係数（デフォルト1.0）
+#define LEFT_MOTOR_COMPENSATION   1.1   // 左モーター補正係数（デフォルト1.0）
 #define RIGHT_MOTOR_COMPENSATION  1.0   // 右モーター補正係数（デフォルト1.0）
 #define CALIBRATION_TEST_TIME     3000  // キャリブレーションテスト時間（3秒）
 
