@@ -41,6 +41,9 @@
 
 #define RECOVERY_ROTATION_TIME_MS 333 // STATE_404（タイムアウト後）でリカバリーのために回転する時間（ミリ秒）
 
+// スキャン結果を格納する配列のサイズ
+#define MAX_SCAN_RESULTS 100
+
 // モーターキャリブレーション定数
 #define LEFT_MOTOR_COMPENSATION   1.1   // 左モーターの出力補正係数（1.0が基準）
 #define RIGHT_MOTOR_COMPENSATION  1.0   // 右モーターの出力補正係数（1.0が基準）
@@ -65,13 +68,11 @@ RobotState previousState = STATE_FIRST;
 unsigned long searchStartTime = 0;
 unsigned long stepForwardStartTime = 0;
 unsigned long lastFeedbackTime = 0;
-unsigned long tMotor = 0;
-unsigned long tSensor = 0;
 unsigned long tPhoto = 0;
 
 // スキャン関連変数
 int currentServoAngle = SEARCH_ANGLE_L;
-int scanResults[50][2]; // [angle, distance]
+int scanResults[MAX_SCAN_RESULTS][2]; // [angle, distance]
 int scanResultCount = 0;
 int targetAngle = 0;
 
@@ -82,7 +83,7 @@ bool isFirstInitialized = false;
 // avoid_fall関連変数
 int avoidFallPhase = 0;
 int avoidFallServoAngle = -90;
-int avoidFallScanResults[50][2];
+int avoidFallScanResults[MAX_SCAN_RESULTS][2];
 int avoidFallScanCount = 0;
 
 // calibrated_approach関連変数
@@ -128,27 +129,6 @@ void setup() {
 void loop() {
   unsigned long now = millis();
   
-  // 非同期処理実行
-  executeAsyncTasks(now);
-  
-  // メインステート処理
-  executeCurrentState(now);
-}
-
-//==================================================================
-void executeAsyncTasks(unsigned long now) {
-  // モーター制御（200Hz = 5ms間隔）
-  if (now - tMotor >= 5) {
-    controlMotor();
-    tMotor = now;
-  }
-  
-  // センサー読み取り（50Hz = 20ms間隔）
-  if (now - tSensor >= 20) {
-    readSensors();
-    tSensor = now;
-  }
-  
   // フォトセンサー監視（found状態以外）
   if (currentState != STATE_FOUND) {
     if (now - tPhoto >= 20) { // 50Hz
@@ -156,6 +136,9 @@ void executeAsyncTasks(unsigned long now) {
       tPhoto = now;
     }
   }
+  
+  // メインステート処理
+  executeCurrentState(now);
 }
 
 //==================================================================
@@ -472,7 +455,7 @@ int getDistance() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   
-  unsigned long duration = pulseIn(ECHO_PIN, HIGH);
+  unsigned long duration = pulseIn(ECHO_PIN, HIGH, 50000); // 50msのタイムアウト
   int distance = duration * 0.034 / 2; // cm to mm conversion
   
   return distance * 10; // convert to mm
@@ -562,13 +545,7 @@ void resetAvoidFallState() {
   avoidFallScanCount = 0;
 }
 
-void controlMotor() {
-  // モーター制御の詳細処理（必要に応じて実装）
-}
 
-void readSensors() {
-  // センサー読み取りの詳細処理（必要に応じて実装）
-}
 
 void checkPhotoSensors() {
   // フォトセンサー監視
