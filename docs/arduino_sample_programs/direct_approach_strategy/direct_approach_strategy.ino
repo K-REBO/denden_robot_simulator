@@ -24,8 +24,8 @@
 #define SEARCH_ANGLE_R        80      // サーボの右方向の最大探索角度（-90〜90度）
 #define SEARCH_ANGLE_STEP     2       // 探索時にサーボを動かす角度のステップ
 #define SEARCH_TIMEOUT        15000   // 探索を開始してからタイムアウトするまでの時間（ミリ秒）
-#define APPROACH_SPEED        50      // ターゲットに接近する際の基本速度
-#define DISTANCE_THRESHOLD    150     // ターゲットを発見したと判断する距離（mm）
+#define APPROACH_SPEED        100      // ターゲットに接近する際の基本速度
+#define DISTANCE_THRESHOLD    250     // ターゲットを発見したと判断する距離（mm）
 #define FEEDBACK_SCAN_DELAY   30      // 接近中に進路補正のためにスキャンする間隔（ミリ秒）
 #define DIRECTION_CORRECTION_GAIN 2.0 // 接近中の進路補正の感度（大きいほど敏感に反応）
 
@@ -36,7 +36,7 @@
 #define RECOVERY_FORWARD_DISTANCE 100 // STATE_404で前進する距離（現在未使用）
 #define RECOVERY_ROTATION_ANGLE 60    // STATE_404で回転する角度（現在未使用）
 
-#define FIRST_ROTATION_TIME   100     // STATE_FIRSTで最初に回転する時間（ミリ秒）
+#define FIRST_ROTATION_TIME   365     // STATE_FIRSTで最初に回転する時間（ミリ秒）365ms = 90度回転
 #define STEP_ROTATION_TIME    1600    // STATE_STEP_FORWARDで回転する時間（ミリ秒）
 
 #define RECOVERY_ROTATION_TIME_MS 333 // STATE_404（タイムアウト後）でリカバリーのために回転する時間（ミリ秒）
@@ -192,7 +192,7 @@ void executeCurrentState(unsigned long now) {
 void executeFirst(unsigned long now) {
   if (!isFirstInitialized) {
     Serial.println("STATE: FIRST - Starting -90 degree rotation");
-    setMotorSpeeds(-80, 80); // 左回転
+    setMotorSpeeds(-150, 150); // 左回転（90度回転用速度）
     stepForwardStartTime = now;
     isFirstInitialized = true;
     return;
@@ -238,8 +238,6 @@ void executeSearch(unsigned long now) {
     
     currentServoAngle += SEARCH_ANGLE_STEP;
     
-    // 車体回転（同時実行）
-    setMotorSpeeds(-30, 30); // ゆっくり左回転
     return;
   }
   
