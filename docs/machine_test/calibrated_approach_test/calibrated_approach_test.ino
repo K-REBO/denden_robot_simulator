@@ -124,7 +124,7 @@ void executeCalibratedApproach(unsigned long now) {
   Serial.println();
   
   // ターゲット発見条件チェック
-  if (currentDistance <= DISTANCE_THRESHOLD && (leftPhoto == 1 || rightPhoto == 1)) {
+  if (currentDistance <= DISTANCE_THRESHOLD && (leftPzhoto == 1 || rightPhoto == 1)) {
     Serial.println("Target found with photo detection -> FOUND");
     currentState = STATE_FOUND;
     setMotorSpeeds(0, 0);

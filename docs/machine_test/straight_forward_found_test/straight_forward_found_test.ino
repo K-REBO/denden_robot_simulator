@@ -193,16 +193,11 @@ void executeFound(unsigned long now) {
     delay(400); // 400ms待つ
   }
 
-  // 10秒停止
-  Serial.println("Waiting for 10 seconds...");
-  delay(10000);
-
-  // ブザーを3回鳴らす
-  Serial.println("Beeping three times...");
-  for (int i = 0; i < 3; i++) {
-    tone(LED_PIN, 1000, 200); // 1kHzのブザーを200ms鳴らす
-    delay(400); // 400ms待つ
-  }
+  // 回転動作（Speed200で365ms）
+  Serial.println("Rotating for 365ms at speed 200...");
+  setMotorSpeeds(-200, 200); // 左回転
+  delay(365);
+  setMotorSpeeds(0, 0); // 停止
 
   // テストを再開
   Serial.println("Restarting test...");

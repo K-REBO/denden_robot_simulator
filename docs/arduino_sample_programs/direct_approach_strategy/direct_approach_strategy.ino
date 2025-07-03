@@ -24,19 +24,19 @@
 #define SEARCH_ANGLE_R        80      // サーボの右方向の最大探索角度（-90〜90度）
 #define SEARCH_ANGLE_STEP     2       // 探索時にサーボを動かす角度のステップ
 #define SEARCH_TIMEOUT        15000   // 探索を開始してからタイムアウトするまでの時間（ミリ秒）
-#define APPROACH_SPEED        100      // ターゲットに接近する際の基本速度
-#define DISTANCE_THRESHOLD    250     // ターゲットを発見したと判断する距離（mm）
+#define APPROACH_SPEED        150      // ターゲットに接近する際の基本速度
+#define DISTANCE_THRESHOLD    250      // ターゲットを発見したと判断する距離（mm）
 #define FEEDBACK_SCAN_DELAY   30      // 接近中に進路補正のためにスキャンする間隔（ミリ秒）
 #define DIRECTION_CORRECTION_GAIN 2.0 // 接近中の進路補正の感度（大きいほど敏感に反応）
 
-#define MIN_APPROACH_SPEED    40      // 接近時の最低速度
-#define MAX_APPROACH_SPEED    60      // 接近時の最高速度
+#define MIN_APPROACH_SPEED    80      // 接近時の最低速度
+#define MAX_APPROACH_SPEED    130      // 接近時の最高速度
 
 #define STEP_FORWARD_DISTANCE 10      // STATE_STEP_FORWARDで前進する距離（現在未使用）
 #define RECOVERY_FORWARD_DISTANCE 100 // STATE_404で前進する距離（現在未使用）
 #define RECOVERY_ROTATION_ANGLE 60    // STATE_404で回転する角度（現在未使用）
 
-#define FIRST_ROTATION_TIME   365     // STATE_FIRSTで最初に回転する時間（ミリ秒）365ms = 90度回転
+#define FIRST_ROTATION_TIME   150     // STATE_FIRSTで最初に回転する時間（ミリ秒）365ms = 90度回転
 #define STEP_ROTATION_TIME    1600    // STATE_STEP_FORWARDで回転する時間（ミリ秒）
 
 #define RECOVERY_ROTATION_TIME_MS 333 // STATE_404（タイムアウト後）でリカバリーのために回転する時間（ミリ秒）
@@ -252,7 +252,16 @@ void executeCalibratedApproach(unsigned long now) {
   int leftPhoto = getL_Photo();
   int rightPhoto = getR_Photo();
   
-  // フォトセンサーによる落下判定（ターゲット発見でない場合）
+
+  // ターゲット発見条件チェック
+  if (currentDistance <= DISTANCE_THRESHOLD && (leftPhoto == 1 || rightPhoto == 1)) {
+    Serial.println("Target found with photo detection -> FOUND");
+    currentState = STATE_FOUND;
+    setMotorBrake();
+    return;
+  }
+
+    // フォトセンサーによる落下判定（ターゲット発見でない場合）
   if ((leftPhoto == 1 || rightPhoto == 1) && currentDistance > DISTANCE_THRESHOLD) {
     Serial.println("Black line detected in CALIBRATED_APPROACH -> AVOID_FALL");
     previousState = currentState;
@@ -261,13 +270,6 @@ void executeCalibratedApproach(unsigned long now) {
     return;
   }
   
-  // ターゲット発見条件チェック
-  if (currentDistance <= DISTANCE_THRESHOLD && (leftPhoto == 1 || rightPhoto == 1)) {
-    Serial.println("Target found with photo detection -> FOUND");
-    currentState = STATE_FOUND;
-    setMotorBrake();
-    return;
-  }
   
   // フィードバック制御による方向修正
   performFeedbackControl(now);
@@ -455,7 +457,7 @@ int getDistance() {
   delayMicroseconds(10);
   digitalWrite(TRIG_PIN, LOW);
   
-  unsigned long duration = pulseIn(ECHO_PIN, HIGH, 50000); // 50msのタイムアウト
+  unsigned long duration = pulseIn(ECHO_PIN, HIGH);
   int distance = duration * 0.034 / 2; // cm to mm conversion
   
   return distance * 10; // convert to mm
@@ -548,8 +550,18 @@ void resetAvoidFallState() {
 
 
 void checkPhotoSensors() {
+  // フォトセンサー値を読み取り
+  int leftPhoto = getL_Photo();
+  int rightPhoto = getR_Photo();
+  
+  // フォトセンサー状態をシリアルに出力
+  Serial.print("Photo L: ");
+  Serial.print(leftPhoto == 1 ? "BLACK" : "WHITE");
+  Serial.print(", R: ");
+  Serial.println(rightPhoto == 1 ? "BLACK" : "WHITE");
+  
   // フォトセンサー監視
-  if (getL_Photo() == 1 || getR_Photo() == 1) {
+  if (leftPhoto == 1 || rightPhoto == 1) {
     // 黒ライン検知、avoid_fall状態に移行
     if (currentState == STATE_FIRST || currentState == STATE_SEARCH || 
         currentState == STATE_STEP_FORWARD || currentState == STATE_404) {
